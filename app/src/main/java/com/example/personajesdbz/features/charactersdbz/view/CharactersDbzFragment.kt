@@ -5,17 +5,26 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.personajesdbz.R
+import com.example.personajesdbz.CharactersDbzApplication
 import com.example.personajesdbz.databinding.FragmentCharactersDbzBinding
 import com.example.personajesdbz.features.base.DbzFragment
+import com.example.personajesdbz.features.charactersdbz.viewmodel.CharactersDbzViewModel
+import com.example.personajesdbz.features.charactersdbz.viewmodel.CharactersDbzViewModelFactory
 import com.example.personajesdbz.model.CharactersDbzModel
 import java.util.UUID
 
 class CharactersDbzFragment : DbzFragment() {
 
     private lateinit var binding: FragmentCharactersDbzBinding
+    private var adapter: CharactersDbzAdapter? = null
+    private val charactersDbzViewModel: CharactersDbzViewModel by viewModels {
+        CharactersDbzViewModelFactory(
+            (activity?.application as CharactersDbzApplication).charactersDbzRepository,
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,40 +36,36 @@ class CharactersDbzFragment : DbzFragment() {
                 CharactersDbzFragmentDirections.actionCharactersDbzFragmentToEnterCharactersFragment(
                     (UUID.randomUUID().toString())))
         }
-        dbzActivity.charactersDbzViewModel.charactersDbzList.observe(viewLifecycleOwner) {
-            initRecyclerView(it)
-            binding.charactersDbzContainer.isVisible = true
+        charactersDbzViewModel.charactersDbzList.observe(viewLifecycleOwner) {
+            it.getContentIfNotHandled()?.let { list ->
+                initRecyclerView(list)
+                binding.charactersDbzContainer.isVisible = true
+            }
         }
-        dbzActivity.charactersDbzViewModel.charactersDbzDelete.observe(viewLifecycleOwner) {
-            binding.charactersDbzContainer.isVisible = true
+        charactersDbzViewModel.charactersDbzDeleted.observe(viewLifecycleOwner) {
+            it.getContentIfNotHandled()?.let { character ->
+                binding.charactersDbzContainer.isVisible = true
+                adapter?.remove(character)
+            }
         }
-        dbzActivity.charactersDbzViewModel.charactersDbzError.observe(viewLifecycleOwner) {
+        charactersDbzViewModel.charactersDbzError.observe(viewLifecycleOwner) {
             binding.charactersDbzContainer.isVisible = false
         }
+        charactersDbzViewModel.getCharactersDbz()
         return binding.root
     }
 
-
     private fun initRecyclerView(list: ArrayList<CharactersDbzModel>) {
         binding.recyclerCharactersDbz.layoutManager = LinearLayoutManager(context)
-        binding.recyclerCharactersDbz.adapter =
-            activity?.let { it ->
-                CharactersDbzAdapter(it, list) {
-                    findNavController().navigate(
-                        CharactersDbzFragmentDirections.actionCharactersDbzFragmentToEnterCharactersFragment(
-                            (it.id)))
-                }
-            }
+        adapter = CharactersDbzAdapter(list, {
+            findNavController().navigate(
+                CharactersDbzFragmentDirections.actionCharactersDbzFragmentToEnterCharactersFragment(
+                    (it.id)))
+        }, {
+            charactersDbzViewModel.deleteCharactersDbz(it)
+        })
+        binding.recyclerCharactersDbz.adapter = adapter
+
     }
 
-    private fun getCharactersDbz() {
-        activity?.applicationContext.let {
-            dbzActivity.charactersDbzViewModel.getCharactersDbz()
-        }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        getCharactersDbz()
-    }
 }

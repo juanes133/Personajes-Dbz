@@ -26,7 +26,7 @@ class CharactersDbzRepository(private val charactersDbzDao: CharactersDbzDao) {
     ) {
         try {
             val characters = CharactersDbzEntity(
-                charactersDbzModel.id.toString(),
+                charactersDbzModel.id,
                 charactersDbzModel.name,
                 charactersDbzModel.race,
                 charactersDbzModel.photo
@@ -39,15 +39,31 @@ class CharactersDbzRepository(private val charactersDbzDao: CharactersDbzDao) {
     }
 
     suspend fun deleteCharactersDbz(
-        id: String,
-        onSuccess: () -> Unit,
+        charactersDbzModel: CharactersDbzModel,
+        onSuccess: (CharactersDbzModel) -> Unit,
         onFailure: (Exception) -> Unit,
     ) {
         try {
-            charactersDbzDao.deleteAll(id)
-            onSuccess()
+            charactersDbzDao.deleteAll(charactersDbzModel.id)
+            onSuccess(charactersDbzModel)
         } catch (e: Exception) {
             onFailure(e)
+        }
+    }
+
+    suspend fun findById(
+        idCharacter: String,
+        onSuccess: (List<CharactersDbzEntity>) -> Unit,
+        onFailure: (Exception) -> Unit,
+    ) {
+        try {
+            onSuccess(charactersDbzDao.getById(idCharacter) as ArrayList<CharactersDbzEntity>)
+        } catch (e: Exception) {
+            if (e is NoSuchElementException) {
+                onSuccess(ArrayList())
+            } else {
+                onFailure(e)
+            }
         }
     }
 }

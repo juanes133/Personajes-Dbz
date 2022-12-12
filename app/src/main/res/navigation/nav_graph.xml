@@ -15,7 +15,7 @@
     </fragment>
     <fragment
         android:id="@+id/enterCharactersFragment"
-        android:name="com.example.personajesdbz.features.entercharacters.EnterCharactersFragment"
+        android:name="com.example.personajesdbz.features.entercharacters.view.EnterCharactersFragment"
         android:label="ingreso de personaje Dbz"
         tools:layout="@layout/fragment_enter_characters" >
         <argument android:name="idcharacter" />
