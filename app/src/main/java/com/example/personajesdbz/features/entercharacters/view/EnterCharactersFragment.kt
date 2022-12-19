@@ -67,7 +67,6 @@ class EnterCharactersFragment : DbzFragment() {
         }
         enterCharactersViewModel.charactersDbzError.observe(viewLifecycleOwner) {
             Toast.makeText(context, "Ha ocurrido un error", Toast.LENGTH_SHORT).show()
-            //TODO: que pasa si hay error?
         }
         return binding.root
     }

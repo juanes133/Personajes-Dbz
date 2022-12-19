@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.fragment.app.Fragment
 import com.example.personajesdbz.DbzActivity
 
-open class DbzFragment: Fragment(){
+open class DbzFragment : Fragment() {
     lateinit var dbzActivity: DbzActivity
 
     override fun onCreate(savedInstanceState: Bundle?) {
